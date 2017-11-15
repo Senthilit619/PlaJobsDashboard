@@ -2,6 +2,7 @@ var express = require('express');
 var sql = require('mssql');
 var app = express();
 var path = require('path');
+var port=process.env.PORT || 3000;
 app.use(express.static('Lib'));
 app.use(express.static('font-awesome-4.7.0'));
 app.use(express.static('Images'));
@@ -193,6 +194,6 @@ app.get('/fetchRegionData', function (req, res) {
     });
 });
 
-app.listen(8081, function () {
+app.listen(port, function () {
     console.log("Server Started on 8081....");
 });
