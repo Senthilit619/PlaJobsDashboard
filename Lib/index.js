@@ -2,18 +2,23 @@
 var app = angular.module('myApp', []);
 app.controller('myCtrl', function ($rootScope, $scope, $http) {
 
-    //Constants
+    // Constants
     $scope.ConnectionStatus = "Connected";
     $scope.loggedEmail = "newuser@dell.com";
     $scope.loading = false;
     $scope.collapsed = false;
+    // Variables for toggle
     $scope.showtables = false;
     $scope.showimages = true;
     $scope.showpages = false;
-    $scope.centraltables = ["DF - Summary"];
-    $scope.AJ3tables = ["AJ3 - Summary"];
+    $scope.showselection = false;
+
+    // Table Details
+    $scope.selection = "";
+    $scope.centraltables = ["DF Summary"];
+    $scope.AJ3tables = [];
     $scope.AJ3subtables = [];
-    $scope.regiontables = ["AJ-Summary", "AJ-1 Details", "AJ-2 Details"];
+    $scope.regiontables = ["AJ Summary", "AJ1 Details", "AJ2 Details"];
     $scope.pageLength = 0;
     $scope.selectedData = [];
     $scope.selectedTable = [];
@@ -62,6 +67,8 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
                 console.log("AJ3 data:");
                 $scope.AJ3data.push(response.data);
                 console.log($scope.AJ3data[0].recordsets);
+                console.log(response.data);
+                $scope.AJ3tables.push("AJ3 - Summary");
                 for(i=1;i<$scope.AJ3data[0].recordsets.length;i++){
                     if($scope.AJ3tables.indexOf($scope.AJ3data[0].recordsets[i][0].JobName) == -1){
                         $scope.AJ3tables.push($scope.AJ3data[0].recordsets[i][0].JobName);
@@ -90,16 +97,32 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         });        
     }
 
-    $scope.showTables = function ($event) {
+    $scope.showTables = function ($event) {              
+        $("#database li div").siblings("ul").addClass("hide");
+        $("#database li div").removeClass("clicked");
         $(event.target).toggleClass("clicked");
-        $(event.target).children().toggleClass("hide");        
+        $(event.target).siblings().toggleClass("hide");
     }
 
-    $scope.showData = function (name, $index,$event) {
-        $scope.showpages = true;
-        console.log(name, $index);
+    $scope.showSubTables = function ($event) {
+        $(event.target).parent().siblings("li").children("ul").addClass("hide");
+        $(event.target).parent().siblings("li").children("div").removeClass("clicked");
+        $(event.target).toggleClass("clicked");
+        $(event.target).siblings().toggleClass("hide");
+    }
+
+    $scope.showData = function (name, $index, $event) {
+
+        if (name == 'Data Factory') {
+            $scope.selection = name+ ' - ' + $scope.centraltables[$index];
+        }
+        else {
+            $scope.selection = name + ' - ' + $scope.regiontables[$index];
+        }
+        $scope.showselection = true;        
         $scope.showtables = true;
         $scope.showimages = false;
+        $scope.showpages = false;
 
         $(event.target).siblings().removeClass("selected");
         $(event.target).toggleClass("selected");
@@ -121,22 +144,29 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         }
 
         if ($scope.tableLength % 15 == 0) {
+            console
             $scope.pageLength = $scope.tableLength / 15;
+            $scope.showpages = true;
         }
         else if ($scope.tableLength <= 15)  {
             $scope.pageLength = 1;
         }
         else if ($scope.tableLength % 15 != 0) {
-            $scope.pageLength = parseInt($scope.tableLength / 15) + 1;            
+            $scope.pageLength = parseInt($scope.tableLength / 15) + 1;
+            $scope.showpages = true;
         }        
     }
 
-
-    $scope.showAJ3data = function (jobName,regionName,$event) {
-        $scope.showpages = true;
-        console.log(jobName,regionName);
+    $scope.showAJ3data = function (jobName, regionName, $event) {
+        if (regionName != undefined)
+            $scope.selection = jobName + ' - ' + regionName;
+        else
+            $scope.selection = jobName;
+        $scope.showselection = true;
         $scope.showtables = true;
         $scope.showimages = false;
+        $scope.showpages = false;
+        console.log(jobName, regionName);
 
         $(event.target).siblings().removeClass("selected");
         $(event.target).toggleClass("selected");
@@ -165,12 +195,17 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         // Calculations for Pagination
         if ($scope.tableLength % 15 == 0) {
             $scope.pageLength = $scope.tableLength / 15;
+            if ($scope.pageLength > 1) {
+                $scope.showpages = true;
+            }            
         }
         else if ($scope.tableLength <= 15) {
             $scope.pageLength = 1;
+            $scope.showpages = false;
         }
         else if ($scope.tableLength % 15 != 0) {
             $scope.pageLength = parseInt($scope.tableLength / 15) + 1;
+            $scope.showpages = true;
         }
     }
 
