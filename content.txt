@@ -1,0 +1,70 @@
+Blob Viewer URL
+
+https://plablobviewer.azurewebsites.net/
+
+Arunpandiyan_T@outlook.com
+
+Arun#317
+
+
+Dev
+
+Central DB (Conn String)
+
+pladevseasqlsvrcentral02.database.windows.net
+
+dell
+
+Infosys@123
+
+
+SELECT * FROM [Platinum].[Region]
+
+
+
+Region 1 
+
+EXEC [Platinum].[GetAJJobDetails]1
+
+DataView
+Summary View AJ1
+Summary View AJ2
+
+Region 2
+
+EXEC [Platinum].[GetAJJobDetails]1
+
+DataView
+Summary View AJ1
+Summary View AJ2
+
+Central
+
+EXEC [Platinum].[GetDFJobDetails]1
+
+
+
+
+Thanks,
+
+Arun.
+
+[
+ {
+  "RegionId":1,
+  "RegionName":"Default",
+  "ConfigDB":"Server=pla-dev-sql-svr-01.database.windows.net;Database=pla-dev-sql-db-01;Integrated Security=False;User ID=dev;Password=xInfoPla#2017x"
+ },
+ {
+  "RegionId":2,
+  "RegionName":"APJ",
+  "ConfigDB":"Server=pla-dev-sea-sqlsvr-ingest-01.database.windows.net;Database=pla-dev-sea-sqldb-ingest-01;Integrated Security=False;User ID=dell;Password=Infosys@123"
+  }
+]
+
+
+Central:pladevseasqlsvrcentral02.database.windows.net,pla-dev-sea-sqldb-central-03,dell,Infosys@123
+
+Region1:pla-dev-sql-svr-01.database.windows.net,pla-dev-sql-db-01,dev,xInfoPla#2017x
+
+Region2:pla-dev-sea-sqlsvr-ingest-01.database.windows.net,pla-dev-sea-sqldb-ingest-01,dell,Infosys@123

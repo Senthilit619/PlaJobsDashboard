@@ -1,0 +1,21 @@
+{
+  "name": "jobsdashboard",
+  "version": "1.0.0",
+  "description": "Jobs Dashboard",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "fusioncharts": "^3.12.2",
+    "mssql": "^4.1.0",
+    "nodemon": "^1.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}
