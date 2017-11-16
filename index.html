@@ -3,23 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <title> Jobs Dashboard</title>
-    <link href="https://fonts.googleapis.com/css?family=Dosis|Josefin+Sans" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Acme|Alegreya+Sans:300" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Exo+2:200,400" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Barlow:300" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Scheherazade" rel="stylesheet">
     <link href="bootstrap.min.css" rel="stylesheet"/>
+    <link href="bootstrap-toggle.min.css" rel="stylesheet" />
     <link href="style.css" rel="stylesheet"/>
     <script src="jquery.min.js"></script>
     <script src="angular.min.js"></script>
     <script src="angular-route.js"></script>
     <script src="bootstrap.min.js"></script>
+    <script src="bootstrap-toggle.min.js"></script>
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <script src="index.js"></script>
     <script src="app.js"></script>
-    <script src="https://code.highcharts.com/stock/highstock.js"></script>
-    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 </head>
 <body ng-controller="myCtrl">    
     <div class="container">
@@ -44,18 +38,12 @@
                         <img class="media-object" src="delllogo.jpg" alt="logo" width="70" height="50">
                     </div>
                     <div class="media-body">
-                        <span class="media-heading">Platinum Jobs DashBoard</span>                                          
+                        <span class="media-heading">Platinum Operations DashBoard</span>                                          
                     </div>
                 </div>
             </div>
             <div class="well row" id="subheader"> 
-                <div class="col-md-2 col-lg-2 col-sm-2 col-xs-2" id="displaytext">
-                    <span id="loading" ng-if="loading">
-                        <span>Loading data</span>
-                        <i class="fa fa-spinner fa-spin fa-1x fa-fw"></i>
-                    </span>
-                </div>  
-                <div class="col-md-3" id="environment">
+                <div class="col-md-3 col-lg-3 col-sm-3 col-xs-3" id="environment">
                     <label for="sel1">Environment:</label>
                     <select ng-model="environment" ng-change="changeEnvironment()">
                         <option value="Dev">Dev</option>
@@ -64,7 +52,7 @@
                         <option value="QAExternal">QA-External</option>
                     </select>
                 </div>
-                <div class="col-md-5 " id="selection" ng-show="showselection">
+                <div class="col-md-7 " id="selection" ng-show="showselection">
                     {{selection}}
                 </div>
                 <div class="col-md-2 col-md-offset-1" id="pages" ng-show="showpages">
@@ -75,32 +63,50 @@
             </div>
             <div id="main" class="row">
                 <div id="sidebar" class="col-md-2 col-lg-2 col-sm-2 col-xs-2">
-                    <ul class="nav nav-pills nav-stacked" id="database">
+                    <div id="displaytext" ng-if="message || loading">
+                        <div id="message" ng-if="message">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
+                            Select the Environment to load the data in the sidebar
+                        </div>
+                        <div id="loading" ng-if="loading">
+                            <span>Loading data</span>
+                            <i class="fa fa-spinner fa-spin fa-1x fa-fw"></i>
+                        </div>
+                    </div> 
+                    <ul class="nav nav-pills nav-stacked dblist">
                         <li>
-                            <div ng-click="showTables($event)" class="category">Analytical Job 3</div>
-                            <ul class="tables hide">
+                            <div ng-click="showDatabase($event)" class="category"><i class="fa fa-chevron-right" aria-hidden="true"></i>Central Region</div>
+                            <ul class="database hide">
                                 <li ng-click="showAJ3data(AJ3tables[0],$index,$event)" class="tableitem">{{AJ3tables[0]}}</li>
+                                <li>
+                                    <div ng-click="showTables($event)">Data Factory</div>
+                                    <ul class="tables hide">
+                                        <li ng-repeat="x in centraldata[0].recordsets" ng-click="showData('Data Factory',$index,$event)" class="tableitem">{{centraltables[$index]}}</li>
+                                    </ul>
+                                </li>
                                 <li ng-repeat="x in AJ3tables" ng-if="$index > 0">
-                                    <div ng-click="showSubTables($event)">{{x}}</div>
-                                    <ul class="subtables hide">
+                                    <div ng-click="showTables($event)">{{x}}</div>
+                                    <ul class="tables hide">
                                         <li ng-repeat="x in AJ3subtables" ng-click="showAJ3data($parent.x,x,$event)" class="tableitem">{{x}}</li>
                                     </ul>
                                 </li>
+                                <li class="tableitem" ng-click="showData('Settings',$index,$event)"><i class="fa fa-cog" aria-hidden="true"></i>Settings</li>
                             </ul>
-                        </li>
-                        <li>
-                            <div ng-click="showTables($event)" class="category">Data Factory</div>
-                            <ul class="tables hide" >
-                                <li ng-repeat="x in centraldata[0].recordsets" ng-click="showData('Data Factory',$index,$event)" class="tableitem">{{centraltables[$index]}}</li>
-                            </ul>                        
-                        </li>
-                        <li ng-repeat="x in regionNames">
-                            <div ng-click="showTables($event)" class="category">{{x}}</div>
-                            <ul class="tables hide">
-                                <li ng-repeat="x in regiondata[0].recordsets" ng-click="showData($parent.x,$index,$event)" class="tableitem">{{regiontables[$index]}}</li>
-                            </ul>
-                        </li>
+                        </li>                        
                     </ul>
+                    <ul class="nav nav-pills nav-stacked dblist">
+                        <li>
+                            <div ng-click="showDatabase($event)" class="category"><i class="fa fa-chevron-right" aria-hidden="true"></i>Injest Regions</div>
+                            <ul class="database hide">
+                                <li ng-repeat="x in regionNames">
+                                    <div ng-click="showTables($event)">{{x}}</div>
+                                    <ul class="tables hide">
+                                        <li ng-repeat="x in regiondata[0].recordsets" ng-click="showData($parent.x,$index,$event)" class="tableitem">{{regiontables[$index]}}</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>                        
+                    </ul>                    
                 </div>
                 <div id="content" class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
                     <div id="frontpage" ng-show="showimages">
@@ -119,7 +125,21 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>                    
+                    </div>      
+                    <div id="settingsdata" ng-show="showsettings">
+                        <table class="table table-striped table-bordered table-hover table-condensed table-responsive" align="center" cellpadding="5" ng-repeat="table in selectedTable[0]">
+                            <thead>
+                                <tr class="info">
+                                    <th ng-repeat="(key,data) in table[0]" style="text-wrap:normal;">{{key}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="row in table">
+                                    <td ng-repeat="(key,data) in row">{{data?data:"-"}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>                     
                 </div>                
             </div>            
         </div>

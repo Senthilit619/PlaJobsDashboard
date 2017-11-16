@@ -6,19 +6,21 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
     $scope.ConnectionStatus = "Connected";
     $scope.loggedEmail = "newuser@dell.com";
     $scope.loading = false;
+    $scope.message = true;
     $scope.collapsed = false;
     // Variables for toggle
     $scope.showtables = false;
     $scope.showimages = true;
     $scope.showpages = false;
     $scope.showselection = false;
+    $scope.showsettings = false;
 
     // Table Details
     $scope.selection = "";
     $scope.centraltables = ["DF Summary"];
     $scope.AJ3tables = [];
     $scope.AJ3subtables = [];
-    $scope.regiontables = ["AJ Summary", "AJ1 Details", "AJ2 Details"];
+    $scope.regiontables = ["Jobs Summary", "Enrich & Compact - AJ1 ", "Egress - AJ2"];
     $scope.pageLength = 0;
     $scope.selectedData = [];
     $scope.selectedTable = [];
@@ -27,9 +29,11 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
     $scope.centraldata = [];    //Central Data
     $scope.AJ3data = [];        //AJ3 Data
     $scope.regiondata = [];     //Region Data
+    $scope.settingsdata = [];   //Settings Data
     
     $scope.changeEnvironment = function () {
         $scope.loading = true;
+        $scope.message = false;
         if ($scope.environment == "Dev") {
             console.log($scope.environment);
             $http.get('connect').then(function (response) {
@@ -63,12 +67,18 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
                 $scope.centraltables.push($scope.centraldata[0].recordsets[2][0].RegionName);
             });
 
+            $http.get('fetchSettings').then(function (response) {
+                console.log("Settings Data:");                
+                $scope.settingsdata.push(response.data);
+                console.log($scope.settingsdata);
+            });
+
             $http.get('fetchAJ3Data').then(function (response) {                
                 console.log("AJ3 data:");
                 $scope.AJ3data.push(response.data);
                 console.log($scope.AJ3data[0].recordsets);
                 console.log(response.data);
-                $scope.AJ3tables.push("AJ3 - Summary");
+                $scope.AJ3tables.push("Region Summary - AJ3");
                 for(i=1;i<$scope.AJ3data[0].recordsets.length;i++){
                     if($scope.AJ3tables.indexOf($scope.AJ3data[0].recordsets[i][0].JobName) == -1){
                         $scope.AJ3tables.push($scope.AJ3data[0].recordsets[i][0].JobName);
@@ -76,13 +86,7 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
                     if ($scope.AJ3subtables.indexOf($scope.AJ3data[0].recordsets[i][0].RegionName) == -1) {
                         $scope.AJ3subtables.push($scope.AJ3data[0].recordsets[i][0].RegionName);
                     }
-                }
-                //$scope.AJ3tables.push($scope.AJ3data[0].recordsets[1][0].JobName);
-                //$scope.AJ3tables.push($scope.AJ3data[0].recordsets[3][0].JobName);
-                //$scope.AJ3tables.push($scope.AJ3data[0].recordsets[5][0].JobName);
-                //$scope.AJ3subtables.push($scope.AJ3data[0].recordsets[1][0].RegionName);
-                //$scope.AJ3subtables.push($scope.AJ3data[0].recordsets[2][0].RegionName);
-                console.log($scope.AJ3subtables);
+                }                
             });
         }
     };
@@ -97,14 +101,25 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         });        
     }
 
-    $scope.showTables = function ($event) {              
-        $("#database li div").siblings("ul").addClass("hide");
-        $("#database li div").removeClass("clicked");
-        $(event.target).toggleClass("clicked");
+    $scope.showDatabase = function ($event) {
+
+        //Hide all the list
+        $(".dblist > li > div ~ ul").addClass("hide");
+        //Show the current list
         $(event.target).siblings().toggleClass("hide");
+        //Remove the highlight in all the names
+        $(".dblist > li > div").removeClass("clicked");
+        //Highlight the clicked name
+        $(event.target).toggleClass("clicked");
+        //Change the arrow to right in all the names
+        $(".dblist > li > div > i").removeClass("fa-chevron-down");
+        $(".dblist > li > div > i").addClass("fa-chevron-right");
+        //Add the down arrow to the clicked name
+        $(event.target).children("i").removeClass("fa-chevron-right");
+        $(event.target).children("i").addClass("fa-chevron-down");        
     }
 
-    $scope.showSubTables = function ($event) {
+    $scope.showTables = function ($event) {
         $(event.target).parent().siblings("li").children("ul").addClass("hide");
         $(event.target).parent().siblings("li").children("div").removeClass("clicked");
         $(event.target).toggleClass("clicked");
@@ -113,26 +128,36 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
 
     $scope.showData = function (name, $index, $event) {
 
-        if (name == 'Data Factory') {
-            $scope.selection = name+ ' - ' + $scope.centraltables[$index];
-        }
-        else {
-            $scope.selection = name + ' - ' + $scope.regiontables[$index];
-        }
-        $scope.showselection = true;        
+        $scope.showselection = true;
         $scope.showtables = true;
         $scope.showimages = false;
         $scope.showpages = false;
+        $scope.showsettings = false;
 
-        $(event.target).siblings().removeClass("selected");
-        $(event.target).toggleClass("selected");
-        
-        if (name == 'central') {
+        if (name == 'Data Factory') {
+            $scope.selection = name+ ' - ' + $scope.centraltables[$index];
+        }
+        else if (name == 'Settings') {
+            $scope.selection = name;
+            $scope.showtables = false;
+            $scope.showimages = false;
+            $scope.showsettings = true;
+        }
+        else {
+            $scope.selection = name + ' - ' + $scope.regiontables[$index];
+        }        
+
+        if (name == 'Data Factory') {
             $scope.selectedData = [];
             $scope.selectedTable = [];
             $scope.selectedTable.push($scope.centraldata[0].recordsets[$index]);
             $scope.tableLength = $scope.selectedTable[0].length;
             $scope.selectedData = $scope.selectedTable[0].slice(0, 15);            
+        }
+        else if (name == 'Settings') {
+            $scope.selectedTable = [];
+            $scope.selectedTable.push($scope.settingsdata[0].recordsets);
+            console.log($scope.selectedTable[0][0]);
         }
         else
         {
@@ -144,7 +169,6 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         }
 
         if ($scope.tableLength % 15 == 0) {
-            console
             $scope.pageLength = $scope.tableLength / 15;
             $scope.showpages = true;
         }
@@ -162,20 +186,16 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
             $scope.selection = jobName + ' - ' + regionName;
         else
             $scope.selection = jobName;
+
         $scope.showselection = true;
         $scope.showtables = true;
         $scope.showimages = false;
         $scope.showpages = false;
-        console.log(jobName, regionName);
-
-        $(event.target).siblings().removeClass("selected");
-        $(event.target).toggleClass("selected");
-
         $scope.selectedData = [];
         $scope.selectedTable = [];
 
         //Select the table based on the click of the user
-        if (jobName == "AJ3 - Summary") {
+        if (jobName == "Region Summary - AJ3") {
             $scope.selectedTable.push($scope.AJ3data[0].recordsets[0]);
             $scope.tableLength = $scope.selectedTable[0].length;
             $scope.selectedData = $scope.selectedTable[0].slice(0, 15);
@@ -183,7 +203,6 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         else {
             for (i = 1; i < $scope.AJ3data[0].recordsets.length; i++) {
                 if (($scope.AJ3data[0].recordsets[i][0].JobName == jobName) && ($scope.AJ3data[0].recordsets[i][0].RegionName == regionName)) {
-
                     $scope.selectedTable.push($scope.AJ3data[0].recordsets[i]);
                     $scope.tableLength = $scope.selectedTable[0].length;
                     $scope.selectedData = $scope.selectedTable[0].slice(0, 15);
@@ -220,4 +239,5 @@ app.controller('myCtrl', function ($rootScope, $scope, $http) {
         var end = ($index) * 15;
         $scope.selectedData = $scope.selectedTable[0].slice(start, end);        
     }
+
 });

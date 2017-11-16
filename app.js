@@ -104,6 +104,51 @@ app.get('/fetchCentralData', function (req, res) {
     });
 });
 
+app.get('/fetchSettings', function (req, res) {
+
+    // Create a configuration object for our Azure SQL connection parameters
+    var dbConfig = {
+        server: "pladevseasqlsvrcentral02.database.windows.net",
+        database: "pla-dev-sea-sqldb-central-03",
+        user: "dell",
+        password: "Infosys@123",
+        port: 1433,
+        options: {
+            encrypt: true
+        }
+    };
+    // Create connection instance
+    var conn = new sql.ConnectionPool(dbConfig);
+
+    conn.connect().then(function () {
+
+        console.log("Connected to the Central Database for Settings....");
+
+        // Create request instance, passing in connection instance
+        var request = new sql.Request(conn);
+
+        // Call mssql's query method passing in params
+        request.query("EXEC   [Platinum].[GetHLSSEtting] EXEC   [Platinum].[GetDFSetting]")
+        .then(function (result) {
+            console.log("Central Query Successful. Results:");
+            console.log(result);
+            data = result;
+            res.send(JSON.stringify(data));
+            conn.close();
+        })
+        // Handle sql statement execution errors
+        .catch(function (err) {
+            console.log(err);
+            conn.close();
+        })
+    })
+    // Handle connection errors
+    .catch(function (err) {
+        console.log(err);
+        conn.close();
+    });
+});
+
 app.get('/fetchAJ3Data', function (req, res) {
 
     // Create a configuration object for our Azure SQL connection parameters
